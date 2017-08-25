@@ -166,6 +166,39 @@ int MP1Node::finishUpThisNode(){
 }
 
 /**
+ * FUNCTION NAME: introduceSelfToGroup
+ *
+ * DESCRIPTION: Join the distributed system
+ */
+int MP1Node::sendMsg(Address *from, Address *to, MsgTypes msgType) {
+        MessageHdr *msg;
+#ifdef DEBUGLOG
+    static char s[1024];
+#endif
+
+    size_t msgsize = sizeof(MessageHdr) + sizeof(from->addr) + sizeof(long) + 1;
+    msg = (MessageHdr *) malloc(msgsize * sizeof(char));
+
+    // create JOINREQ message: format of data is {struct Address myaddr}
+    msg->msgType = JOINREP;
+    memcpy((char *)(msg+1), &(from->addr), sizeof(from->addr));
+    memcpy((char *)(msg+1) + 1 + sizeof(memberNode->addr.addr), &memberNode->heartbeat, sizeof(long));
+
+#ifdef DEBUGLOG
+    sprintf(s, "Trying to send joinrep...");
+    log->LOG(&memberNode->addr, s);
+#endif
+
+    // send JOINREP message to introducer member
+    emulNet->ENsend(from, to, (char *)msg, msgsize);
+
+    free(msg);
+
+    return 1;
+
+}
+
+/**
  * FUNCTION NAME: nodeLoop
  *
  * DESCRIPTION: Executed periodically at each member
@@ -218,6 +251,88 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
 	/*
 	 * Your code goes here
 	 */
+        char temp[2000];
+        Member* m = (Member*) env; // Receiving Node
+        //en_msg *em = (en_msg*) data;; // Sending Node
+        int nid; // neighbour id
+        short nport; // neighbour port
+
+        Address recvedFromAddr;
+
+        MessageHdr* mhdr = (MessageHdr*)data;
+        Address *sendingAddr = (Address*)(data + sizeof(MessageHdr));
+
+        memcpy(&(recvedFromAddr.addr), &(m->addr), sizeof(m->addr));
+        //memcpy(&(sendingAddr.addr), &(em->from.addr), sizeof(em->from.addr));
+
+        nid = *(int*)&sendingAddr->addr[0];
+        nport =  *(short *)&sendingAddr->addr[4];
+        //MemberListEntry* nle new MemberListEntry(nid,nport);
+        MemberListEntry nle,ml;
+        std::vector<MemberListEntry>::iterator it;
+
+        #ifdef DEBUGLOG
+        //sprintf(temp, "Receiving  msg %s from node %d.%d.%d.%d:%d queue which was sent by node %d.%d.%d.%d:%d", MsgTypeString[(int)mhdr->msgType],recvedFromAddr.addr[0], recvedFromAddr.addr[1], recvedFromAddr.addr[2], recvedFromAddr.addr[3], *(short *)&recvedFromAddr.addr[4], sendingAddr->addr[0], sendingAddr->addr[1], sendingAddr->addr[2], sendingAddr->addr[3], *(short *)&sendingAddr->addr[4]);
+        sprintf(temp, "Receiving  msg %d from node %d.%d.%d.%d:%d queue which was sent by node %d.%d.%d.%d:%d", (int)mhdr->msgType,recvedFromAddr.addr[0], recvedFromAddr.addr[1], recvedFromAddr.addr[2], recvedFromAddr.addr[3], *(short *)&recvedFromAddr.addr[4], sendingAddr->addr[0], sendingAddr->addr[1], sendingAddr->addr[2], sendingAddr->addr[3], *(short *)&sendingAddr->addr[4]);
+        log->LOG(&memberNode->addr, temp);
+        #endif
+        int nbr = 0;
+
+        
+        switch (mhdr->msgType) {
+
+           case JOINREQ :
+              nle = m->memberList.at(nid);
+              nle.setid(nid);
+              nle.setport(nport);
+              m->memberList.at(nid) = nle;
+             
+              m->nnb++;
+
+              for (unsigned int i = 0; i < m->memberList.size(); i++)
+              {
+                 ml =  m->memberList.at(i);
+                 if (ml.getid() != -1)               
+                   nbr++;
+              }
+              
+
+              std::cout << "recived JOINREQ from " << nid << ":" << nport << " neighbours:" <<  m->nnb << " nbrs:" << nbr << endl;
+              
+              sendMsg(&recvedFromAddr,sendingAddr,JOINREP);
+              break;
+
+           case JOINREP :
+              memberNode->inGroup = 1;
+      //        *nle = m->memberList.at(nid);
+        //      nle->setid(nid);
+         //     nle->setport(nport);
+          //    m->memberList.at(nid) = *nle;
+              //m->memberList.insert(it+nid,*nle);
+              nle = m->memberList.at(nid);
+              nle.setid(nid);
+              nle.setport(nport);
+              m->memberList.at(nid) = nle;
+              m->nnb++;
+
+              for (unsigned int i = 0; i < m->memberList.size(); i++)
+              {
+                 ml =  m->memberList.at(i);
+                 if (ml.getid() != -1)               
+                   nbr++;
+              }
+
+              std::cout << "recived JOINREP from " << nid << ":" << nport << " neighbours:" <<  m->nnb << " nbrs:" << nbr << endl;
+              break;
+
+           default:
+              cout << "recived message not recognized" << endl;
+
+           break;
+        }
+
+
+        return false;
 }
 
 /**
@@ -260,13 +375,23 @@ Address MP1Node::getJoinAddress() {
     return joinaddr;
 }
 
+int MP1Node::getMaxPeers() {
+       return par->MAX_NNB;
+}
 /**
  * FUNCTION NAME: initMemberListTable
  *
  * DESCRIPTION: Initialize the membership list
  */
 void MP1Node::initMemberListTable(Member *memberNode) {
+        // reserve space in vector for all peers
+        memberNode->memberList.reserve(getMaxPeers());
 	memberNode->memberList.clear();
+        std::vector<MemberListEntry>::iterator it =  memberNode->memberList.begin();
+        for ( int i=0; i <= getMaxPeers(); i++) {
+           MemberListEntry* nle = new MemberListEntry(-1,-1);
+           memberNode->memberList.insert(it+i,*nle);
+        } 
 }
 
 /**

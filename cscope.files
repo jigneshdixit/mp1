@@ -7,7 +7,6 @@
 ./MP1Node.h
 ./Member.h
 ./MP1Node.cpp
-./Project2/Project2/Source.cpp
 ./Member.cpp
 ./Log.cpp
 ./Application.cpp

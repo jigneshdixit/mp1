@@ -28,9 +28,12 @@
 /**
  * Message Types
  */
+
+
 enum MsgTypes{
     JOINREQ,
     JOINREP,
+    HEARTBIT,
     DUMMYLASTMSGTYPE
 };
 
@@ -75,6 +78,8 @@ public:
 	Address getJoinAddress();
 	void initMemberListTable(Member *memberNode);
 	void printAddress(Address *addr);
+	int sendMsg(Address *from, Address *to, MsgTypes msgType);
+        int getMaxPeers();
 	virtual ~MP1Node();
 };
 

@@ -1,4 +1,4 @@
-cscope 15 /localrepo/jdixit1/mp1               0000512345
+cscope 15 /localrepo/jdixit1/mp1               0000513857
 	@Application.cpp
 
 7 
@@ -3255,51 +3255,179 @@ msg
 	}
 }
 
-174 
+173 
 MP1Node
+::
+	$£ndMsg
+(
+Addªss
+ *
+‰om
+, Addªs†*
+to
+, 
+MsgTy≥s
+ 
+msgTy≥
+) {
+
+174 
+MesßgeHdr
+ *
+msg
+;
+
+175 #ifde‡
+DEBUGLOG
+
+
+176 
+s
+[1024];
+
+179 
+size_t
+ 
+msgsize
+ = (
+MesßgeHdr
+Ë+ (
+‰om
+->
+addr
+) + () + 1;
+
+180 
+msg
+ = (
+MesßgeHdr
+ *Ë
+	`mÆloc
+(
+msgsize
+ * ());
+
+183 
+msg
+->
+msgTy≥
+ = 
+JOINREP
+;
+
+184 
+	`mem˝y
+((*)(
+msg
++1), &(
+‰om
+->
+addr
+), (from->addr));
+
+185 
+	`mem˝y
+((*)(
+msg
++1Ë+ 1 + (
+membîNode
+->
+addr
+.addr), &membîNode->
+hóπbót
+, ());
+
+187 #ifde‡
+DEBUGLOG
+
+
+188 
+	`•rötf
+(
+s
+, "TryingÅo send joinrep...");
+
+189 
+log
+->
+	`LOG
+(&
+membîNode
+->
+addr
+, 
+s
+);
+
+193 
+emulNë
+->
+	`EN£nd
+(
+‰om
+, 
+to
+, (*)
+msg
+, 
+msgsize
+);
+
+195 
+	`‰ì
+(
+msg
+);
+
+199 
+	}
+}
+
+207 
+	gMP1Node
 ::
 	$nodeLo›
 () {
 
-175 i‡(
+208 i‡(
 membîNode
 ->
 bFaûed
 ) {
 
-180 
+213 
 	`checkMesßges
 ();
 
-183 if–!
+216 if–!
 membîNode
 ->
 öGroup
  ) {
 
-188 
+221 
 	`nodeLo›Ops
 ();
 
-191 
+224 
 	}
 }
 
-198 
+231 
 	gMP1Node
 ::
 	$checkMesßges
 () {
 
-199 *
+232 *
 ±r
 ;
 
-200 
+233 
 size
 ;
 
-203  !
+236  !
 membîNode
 ->
 mp1q
@@ -3307,7 +3435,7 @@ mp1q
 	`em±y
 () ) {
 
-204 
+237 
 ±r
  = 
 membîNode
@@ -3319,7 +3447,7 @@ mp1q
 ñt
 ;
 
-205 
+238 
 size
  = 
 membîNode
@@ -3329,7 +3457,7 @@ mp1q
 	`‰⁄t
 ().size;
 
-206 
+239 
 membîNode
 ->
 mp1q
@@ -3337,7 +3465,7 @@ mp1q
 	`p›
 ();
 
-207 
+240 
 	`ªcvCÆlBack
 ((*)
 membîNode
@@ -3347,11 +3475,11 @@ membîNode
 size
 );
 
-210 
+243 
 	}
 }
 
-217 
+250 
 boﬁ
  
 	gMP1Node
@@ -3365,21 +3493,165 @@ d©a
 size
  ) {
 
-221 
+254 
+ãmp
+[2000];
+
+255 
+Membî
+* 
+m
+ = (Membî*Ë
+ív
+;
+
+257 
+nid
+;
+
+258 
+≈‹t
+;
+
+260 
+Addªss
+ 
+ªcvedFromAddr
+;
+
+262 
+MesßgeHdr
+* 
+mhdr
+ = (MesßgeHdr*)
+d©a
+;
+
+263 
+Addªss
+ *
+£ndögAddr
+ = (Addªss*)(
+d©a
+ + (
+MesßgeHdr
+));
+
+265 
+	`mem˝y
+(&(
+ªcvedFromAddr
+.
+addr
+), &(
+m
+->addr), (m->addr));
+
+268 
+nid
+ = *(*)&
+£ndögAddr
+->
+addr
+[0];
+
+269 
+≈‹t
+ = *(*)&
+£ndögAddr
+->
+addr
+[4];
+
+271 #ifde‡
+DEBUGLOG
+
+
+272 
+	`•rötf
+(
+ãmp
+, "Re˚ivög msg %†‰omÇodê%d.%d.%d.%d:%d queuêwhich wa†£¡ byÇodê%d.%d.%d.%d:%d", 
+MsgTy≥Såög
+[()
+mhdr
+->
+msgTy≥
+],
+ªcvedFromAddr
+.
+addr
+[0],ÑecvedFromAddr.addr[1],ÑecvedFromAddr.addr[2],ÑecvedFromAddr.addr[3], *(*)&ªcvedFromAddr.addr[4], 
+£ndögAddr
+->addr[0], sendingAddr->addr[1], sendingAddr->addr[2], sendingAddr->addr[3], *(*)&sendingAddr->addr[4]);
+
+273 
+log
+->
+	`LOG
+(&
+membîNode
+->
+addr
+, 
+ãmp
+);
+
+277 
+mhdr
+->
+msgTy≥
+) {
+
+279 
+JOINREQ
+ :
+
+301 
+	`£ndMsg
+(&
+ªcvedFromAddr
+,
+£ndögAddr
+,
+JOINREP
+);
+
+304 
+JOINREP
+ :
+
+307 
+membîNode
+->
+öGroup
+ = 1;
+
+325 
+cout
+ << "ªcived mesßgênŸÑecognized" << 
+ídl
+;
+
+331  
+Ál£
+;
+
+332 
 	}
 }
 
-230 
+341 
 	gMP1Node
 ::
 	$nodeLo›Ops
 () {
 
-237 
+348 
 	}
 }
 
-244 
+355 
 	gMP1Node
 ::
 	$isNuŒAddªss
@@ -3389,7 +3661,7 @@ Addªss
 addr
 ) {
 
-245  (
+356  (
 	`memcmp
 (
 addr
@@ -3397,11 +3669,11 @@ addr
 NULLADDR
 , 6) == 0 ? 1 : 0);
 
-246 
+357 
 	}
 }
 
-253 
+364 
 Addªss
  
 	gMP1Node
@@ -3409,13 +3681,13 @@ Addªss
 	$gëJoöAddªss
 () {
 
-254 
+365 
 Addªss
  
 joöaddr
 ;
 
-256 
+367 
 	`mem£t
 (&
 joöaddr
@@ -3423,27 +3695,43 @@ joöaddr
 Addªss
 ));
 
-257 *(*)(&
+368 *(*)(&
 joöaddr
 .
 addr
 ) = 1;
 
-258 *(*)(&
+369 *(*)(&
 joöaddr
 .
 addr
 [4]) = 0;
 
-260  
+371  
 joöaddr
 ;
 
-261 
+372 
 	}
 }
 
-268 
+374 
+	gMP1Node
+::
+	$gëMaxPìrs
+() {
+
+375  
+∑r
+->
+MAX_NNB
+;
+
+376 
+	}
+}
+
+382 
 	gMP1Node
 ::
 	$öôMembîLi°TabÀ
@@ -3453,7 +3741,17 @@ Membî
 membîNode
 ) {
 
-269 
+384 
+membîNode
+->
+membîLi°
+.
+	`ª£rve
+(
+	`gëMaxPìrs
+());
+
+385 
 membîNode
 ->
 membîLi°
@@ -3461,11 +3759,11 @@ membîLi°
 	`˛ór
 ();
 
-270 
+386 
 	}
 }
 
-277 
+393 
 	gMP1Node
 ::
 	$¥ötAddªss
@@ -3475,17 +3773,17 @@ Addªss
 addr
 )
 
-279 
+395 
 	`¥ötf
 ("%d.%d.%d.%d:%d \n", 
 addr
 ->addr[0],addr->addr[1],addr->addr[2],
 
-280 
+396 
 addr
 ->addr[3], *(*)&addr->addr[4]) ;
 
-281 
+397 
 	}
 }
 
@@ -3537,77 +3835,85 @@ _MP1NODE_H_
 
 	)
 
-31 
+32 c⁄° * 
+	gMsgTy≥Såög
+[] = {"JOINREQ", "JOINREP", "HEARTBIT", "DUMMY"};
+
+34 
 	eMsgTy≥s
 {
 
-32 
+35 
 	mJOINREQ
 ,
 
-33 
+36 
 	mJOINREP
 ,
 
-34 
+37 
+	mHEARTBIT
+,
+
+38 
 	mDUMMYLASTMSGTYPE
 
 
-42 
+46 
 	sMesßgeHdr
  {
 
-43 
+47 
 MsgTy≥s
  
 	mmsgTy≥
 ;
 
-44 }
+48 }
 	tMesßgeHdr
 ;
 
-51 ˛as†
+55 ˛as†
 	cMP1Node
  {
 
-52 
+56 
 	m¥iv©e
 :
 
-53 
+57 
 EmulNë
  *
 emulNë
 ;
 
-54 
+58 
 Log
  *
 	mlog
 ;
 
-55 
+59 
 P¨ams
  *
 	m∑r
 ;
 
-56 
+60 
 Membî
  *
 	mmembîNode
 ;
 
-57 
+61 
 	mNULLADDR
 [6];
 
-59 
+63 
 	mpublic
 :
 
-60 
+64 
 MP1Node
 (
 Membî
@@ -3621,21 +3927,21 @@ Log
 Addªss
  *);
 
-61 
+65 
 Membî
  * 
 	$gëMembîNode
 () {
 
-62  
+66  
 membîNode
 ;
 
-64 
+68 
 	`ªcvLo›
 ();
 
-65 
+69 
 	`íqueueWøµî
 (*
 ív
@@ -3645,7 +3951,7 @@ buff
 size
 );
 
-66 
+70 
 	`nodeSèπ
 (*
 £rvaddr°r
@@ -3653,7 +3959,7 @@ size
 £rvîp‹t
 );
 
-67 
+71 
 	`öôThisNode
 (
 Addªss
@@ -3661,7 +3967,7 @@ Addªss
 joöaddr
 );
 
-68 
+72 
 	`öåodu˚SñfToGroup
 (
 Addªss
@@ -3669,19 +3975,19 @@ Addªss
 joöAddªss
 );
 
-69 
+73 
 	`föishUpThisNode
 ();
 
-70 
+74 
 	`nodeLo›
 ();
 
-71 
+75 
 	`checkMesßges
 ();
 
-72 
+76 
 boﬁ
  
 	`ªcvCÆlBack
@@ -3693,11 +3999,11 @@ d©a
 size
 );
 
-73 
+77 
 	`nodeLo›Ops
 ();
 
-74 
+78 
 	`isNuŒAddªss
 (
 Addªss
@@ -3705,13 +4011,13 @@ Addªss
 addr
 );
 
-75 
+79 
 Addªss
  
 	`gëJoöAddªss
 ();
 
-76 
+80 
 	`öôMembîLi°TabÀ
 (
 Membî
@@ -3719,7 +4025,7 @@ Membî
 membîNode
 );
 
-77 
+81 
 	`¥ötAddªss
 (
 Addªss
@@ -3727,13 +4033,31 @@ Addªss
 addr
 );
 
-78 
+82 
+	`£ndMsg
+(
+Addªss
+ *
+‰om
+, Addªs†*
+to
+, 
+MsgTy≥s
+ 
+msgTy≥
+);
+
+83 
+	`gëMaxPìrs
+();
+
+84 
 vútuÆ
  ~
 	`MP1Node
 ();
 
-79 
+85 
 	}
 };
 
@@ -4988,134 +5312,6 @@ P¨ams
 36 
 gëcuºtime
 ();
-
-	@Project2/Project2/Source.cpp
-
-1 
-	~<io°ªam
->
-
-2 
-	~<°dio.h
->
-
-4 
-usög
- 
-«me•a˚
- 
-	g°d
-;
-
-6 ˛as†
-	cTe°
-
-
-8 
-	mpublic
-:
-
-9 
-a
-;
-
-10 
-	$Te°
-() {}
-
-11 
-	$Te°
-(
-t
-Ë{
-a
-Ò;
-	}
-}
-
-12 
-	$Te°
-(c⁄° 
-Te°
- &
-t
-)
-
-14 
-cout
-<<"C›y c⁄°ru˘‹ cÆÀd "<<
-ídl
-;
-
-15 *
-this
- = 
-t
-;
-
-16 
-	}
-}
-
-17 
-	gTe°
-& 
-	g›î©‹
- = (c⁄° 
-Te°
- &
-t
-)
-
-19 
-cout
-<<"Assignmíà›î©‹ cÆÀd "<<
-ídl
-;
-
-20 
-	gthis
-->
-	ga
- = 3;
-
-21  *
-	gthis
-;
-
-25 
-	$maö
-()
-
-27 
-Te°
- 
-	`t1
-(2), 
-	`t2
-(5);
-
-28 
-t2
- = 
-t1
-;
-
-29 
-Te°
- 
-	`t3
-(
-t1
-);
-
-30 
-	`gëch¨
-();
-
-32 
-	}
-}
 
 	@Queue.h
 
@@ -88542,8 +88738,8 @@ _ASM_GENERIC_ERRNO_BASE_H
 .
 1
 /usr/include
-117
-2940
+116
+2911
 Application.cpp
 Application.h
 EmulNet.cpp
@@ -88556,7 +88752,6 @@ Member.cpp
 Member.h
 Params.cpp
 Params.h
-Project2/Project2/Source.cpp
 Queue.h
 stdincludes.h
 testcases/.DS_Store
