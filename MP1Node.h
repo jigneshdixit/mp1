@@ -33,7 +33,7 @@
 enum MsgTypes{
     JOINREQ,
     JOINREP,
-    HEARTBIT,
+    HEARTBEAT,
     DUMMYLASTMSGTYPE
 };
 
@@ -76,9 +76,11 @@ public:
 	void nodeLoopOps();
 	int isNullAddress(Address *addr);
 	Address getJoinAddress();
+	Address getAddressFromId(int id);
 	void initMemberListTable(Member *memberNode);
 	void printAddress(Address *addr);
-	int sendMsg(Address *from, Address *to, MsgTypes msgType);
+	int sendMsg(Address *from, Address *to, MsgTypes msgType, int size, MemberListEntry **data);
+	int sendMsgHeartbeat(Address *from, Address *to, MsgTypes msgType, long hb, long ts, MemberListEntry **data, int size);
         int getMaxPeers();
 	virtual ~MP1Node();
 };
