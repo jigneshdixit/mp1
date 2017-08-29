@@ -136,6 +136,8 @@ int MP1Node::introduceSelfToGroup(Address *joinaddr) {
         mle = memberNode->memberList.at(nid);
         mle.setid(nid);
         mle.setport(nport);
+        mle.settimestamp(par->getcurrtime());
+        mle.setheartbeat(0);
         memberNode->memberList.at(nid) = mle;
         memberNode->inGroup = true;
 
@@ -279,8 +281,6 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
         Address *sendingAddr = (Address*)(data + sizeof(MessageHdr));
         long *hb = (long*)(data + sizeof(MessageHdr)+ sizeof (m->addr));
 
-        cout << "HeartBeat:" << *hb << endl;
-
         memcpy(&(recvedFromAddr.addr), &(m->addr), sizeof(m->addr));
         //memcpy(&(sendingAddr.addr), &(em->from.addr), sizeof(em->from.addr));
 
@@ -310,6 +310,8 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
               // Update Member Entry
               nle = m->memberList.at(nid);
               nle.setid(nid);
+              nle.settimestamp(par->getcurrtime());
+              nle.setheartbeat(0);
               nle.setport(nport);
               m->memberList.at(nid) = nle;
              
@@ -328,7 +330,7 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
               cout << "Node " << rid << " member list dump:::" << endl;
               for (unsigned int i = 0; i < m->memberList.size(); i++)
               {
-                 cout << i << ":" << mle->getid() << endl;
+                 cout << i << ":" << mle->getid() << "heartbeat " << mle->gettimestamp() << endl;
                  mle++;
               }
               
@@ -353,20 +355,24 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
  //             nle.setport(nport);
  //             m->memberList.at(nid) = nle;
  //             m->nnb++;
+              int id; 
               cout << "Node " << rid << " member list dump:::" << endl;
              // update memberListEntry from recived ones
              for (unsigned int i = 0; i < *mysize; i++)
              {
-                int id = mle->getid();
+                id = mle->getid();
                 if (id != -1)  {             
                    nle = m->memberList.at(id);
                    nle.setid(id);
                    nle.setport(mle->getport());
-                   m->memberList.at(nid) = nle;
+                   nle.settimestamp(par->getcurrtime());
+                   nle.setheartbeat(mle->getheartbeat());
+                   // TODO update timesmap and heartbeat
+                   m->memberList.at(id) = nle;
                   
                    m->nnb++;
                 }
-                cout << i << ":::" << mle->getid() << endl;
+                cout << i << ":::" << mle->getid() << " timestamp " << mle->gettimestamp() << endl;
                 
                 mle++;
              }
@@ -375,6 +381,16 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
               break;
 
            case HEARTBEAT :
+            {
+        #ifdef DEBUGLOG
+              MemberListEntry entry;
+              for (unsigned int i = 0; i < m->memberList.size(); i++)
+              {
+                 entry = m->memberList.at(i);
+                 sprintf(temp,"entry %d id:%d heartbeat:%u timestamp:%u", i, entry.getid(), entry.getheartbeat(), entry.gettimestamp());
+                 log->LOG(&memberNode->addr, temp);
+              }
+        #endif
               mymle = (MemberListEntry**) (data + sizeof(MessageHdr)+ sizeof (m->addr) + sizeof(long));
               mle = *mymle;
               mysize = (int*)(data + sizeof(MessageHdr)+ sizeof (m->addr) + sizeof(long) + sizeof(MemberListEntry*));
@@ -383,21 +399,52 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
               cout << "Node " << rid << " member list dump:::" << endl;
               cout << "size:" << *mysize << " mydata:" << mle << endl;
              // update memberListEntry from recived ones
+             // merge heartbeat and timestamp line by line
+             int id;
              for (unsigned int i = 0; i < *mysize; i++)
              {
-                int id = mle->getid();
+                id = mle->getid();
+                nle = m->memberList.at(i);
+                //if (nle.getid()!=-1)  {             
                 if (id != -1)  {             
-                   nle = m->memberList.at(id);
-                   cout << i << ":::" << mle->getid() << " heartbeat:" << mle->getheartbeat() << " timestamp:" << mle->gettimestamp() << endl;
+                   if (mle->getheartbeat() > nle.getheartbeat()) {
+                      nle.setid(id); 
+                      nle.setheartbeat(mle->getheartbeat()); 
+                      nle.settimestamp(par->getcurrtime()); 
+                      m->memberList.at(i) = nle;
+                   }
                 }
+                cout << i << ":::" << mle->getid() << " heartbeat:" << mle->getheartbeat() << " timestamp:" << mle->gettimestamp() << endl;
                 
                 mle++;
              }
               
-
-              
-//            sendMsg(&recvedFromAddr,sendingAddr,JOINREP);
-              break;
+        #ifdef DEBUGLOG
+              for (unsigned int i = 0; i < m->memberList.size(); i++)
+              {
+                 entry = m->memberList.at(i);
+                 sprintf(temp,"exit %d id:%d heartbeat:%u timestamp:%u", i, entry.getid(), entry.getheartbeat(), entry.gettimestamp());
+                 log->LOG(&memberNode->addr, temp);
+              }
+        #endif
+#if 0
+              int gossipIndex;
+              MemberListEntry* mmle;
+              mmle = memberNode->memberList.data();
+              // send gossip message to another 2 nodes
+              for (int gossipCount = 0; gossipCount < 2; gossipCount++) {
+                 do 
+                 {
+                    gossipIndex = rand() % (par->MAX_NNB+1);
+       
+                 } while ((gossipIndex==0) || (gossipIndex == nid) );
+                 
+                 Address to = getAddressFromId(gossipIndex);
+                 sendMsgHeartbeat(&memberNode->addr, &to, HEARTBEAT, memberNode->heartbeat, 100, &mmle,memberNode->memberList.size());
+              }
+#endif
+            }  
+            break;
 
            default:
               cout << "recived message not recognized" << endl;
@@ -412,11 +459,11 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
 int MP1Node::sendMsgHeartbeat(Address *from, Address *to, MsgTypes msgType, long heartbeat, long ts, MemberListEntry **data, int size) {
         MessageHdr *msg;
         MemberListEntry* mle = *data;
+        int toNodeId = *(int*)&to->addr[0];
 #ifdef DEBUGLOG
     static char s[1024];
 #endif
     cout << "**data:" << data << " *data:" << *data << endl;
-    cout << "sizeof(MemberListEntry)*:" << sizeof(MemberListEntry*)<< endl;
 
     size_t msgsize = sizeof(MessageHdr) + sizeof(from->addr) + sizeof(long) + sizeof(MemberListEntry*) + sizeof(int) + 1;
     msg = (MessageHdr *) malloc(msgsize * sizeof(char));
@@ -429,7 +476,7 @@ int MP1Node::sendMsgHeartbeat(Address *from, Address *to, MsgTypes msgType, long
     memcpy((char *)(msg+1) + sizeof(memberNode->addr.addr) +sizeof(long)+sizeof(MemberListEntry*),&size,sizeof(int));
 
 #ifdef DEBUGLOG
-    sprintf(s, "Trying to send heartbeat...");
+    sprintf(s, "Trying to send heartbeat to node ID %d ...",toNodeId);
     log->LOG(&memberNode->addr, s);
 #endif
 
@@ -454,54 +501,83 @@ void MP1Node::nodeLoopOps() {
         int nid = *(int*)&memberNode->addr.addr[0];
         MemberListEntry* mmle;
         int gossipIndex;
+        MemberListEntry dmle;
+        char temp[2000];
 
 
 	/*
 	 * Your code goes here
 	 */
-    if (!memberNode->inited || memberNode->bFailed)
+    if (!memberNode->inited || !memberNode->inGroup || memberNode->bFailed)
        return;
     
+        #ifdef DEBUGLOG
+              MemberListEntry entry;
+              for (unsigned int i = 0; i < memberNode->memberList.size(); i++)
+              {
+                 entry = memberNode->memberList.at(i);
+                 sprintf(temp,"LoopOps entry %d id:%d heartbeat:%u timestamp:%u", i, entry.getid(), entry.getheartbeat(), entry.gettimestamp());
+                 log->LOG(&memberNode->addr, temp);
+               }
+        #endif
     // go through MemberEntryList to check any node becoming fauly or not by comparing timeout and last heartbeat
     // if heartbeat is not updated for timeout period put it in suspected list
 
+             for (unsigned int i = 0; i < memberNode->memberList.size(); i++)
+             {
+                dmle = memberNode->memberList.at(i);
+                if ((dmle.getid() !=-1) && ((par->getcurrtime() - dmle.gettimestamp()) > TFAIL)) {
+                   cout << i << " **" << dmle.getid() << " suspecting node failure curtime " << par->getcurrtime() << " timestamp:" << dmle.gettimestamp() << endl;
+                   sprintf(temp, "** %d suspecting node failure currtime %u while timestamp %u ", dmle.getid(), par->getcurrtime(), dmle.gettimestamp()); 
+                 log->LOG(&memberNode->addr, temp);
+                }
+                
+             }
 
     // Monitor timeout of suspected members, is suspected timeout criteria meets mark it as Fail 
 
     // First update own timestamp 
     // Update own heartbeat
     // pick two neighbours randomly and send Gossip style hearbeat message
-    
-    
-    do 
-    {
-       gossipIndex = rand() % par->MAX_NNB;
-    } while ((gossipIndex==0) || (gossipIndex == nid));
-
-    Address to = getAddressFromId(gossipIndex);
-    memberNode->heartbeat = memberNode->heartbeat + 1;
 
     MemberListEntry mle;
+    
+    memberNode->heartbeat = memberNode->heartbeat + 1;
+
     mle = memberNode->memberList.at(nid);
     mle.setheartbeat(memberNode->heartbeat);
     mle.settimestamp(par->getcurrtime());
     memberNode->memberList.at(nid) = mle;
     mmle = memberNode->memberList.data();
 
-             MemberListEntry dmle;
 
+#if 0
              //  DEBUG update memberListEntry from recived ones
              for (unsigned int i = 0; i < memberNode->memberList.size(); i++)
              {
                 dmle = memberNode->memberList.at(i);
-                cout << i << "::::" << dmle.getid() << " heartbeat:" << dmle.getheartbeat() << " timestamp:" << dmle.gettimestamp() << endl;
+                cout << i << ":: before sent" << dmle.getid() << " heartbeat:" << dmle.getheartbeat() << " timestamp:" << dmle.gettimestamp() << endl;
                 
              }
               
 
-    std::cout << "[" << par->getcurrtime() << "]" << "from node:" << nid << " to node:" << gossipIndex << "sending HEARTBEAT... " << endl;
-    sendMsgHeartbeat(&memberNode->addr, &to, HEARTBEAT, memberNode->heartbeat, 100, &mmle,memberNode->memberList.size());
+    std::cout << "[" << par->getcurrtime() << "]" << "from node:" << nid << " to node:" << gossipIndex << " sending HEARTBEAT... " << endl;
+#endif
+    int lastIndex;
+    for (int i = 0; i < 2; i++) {
+       do 
+       {
+          gossipIndex = rand() % (par->MAX_NNB+1);
+          mle =  memberNode->memberList.at(gossipIndex);
+       
+       } while ((gossipIndex==0) || (gossipIndex == nid) || (mle.getid()==-1) || ( i > 0 && gossipIndex == lastIndex));
 
+       lastIndex = gossipIndex;
+       
+       Address to = getAddressFromId(gossipIndex);
+
+       sendMsgHeartbeat(&memberNode->addr, &to, HEARTBEAT, memberNode->heartbeat, 100, &mmle,memberNode->memberList.size());
+    }
     return;
 }
 
@@ -552,7 +628,7 @@ void MP1Node::initMemberListTable(Member *memberNode) {
 	memberNode->memberList.clear();
         std::vector<MemberListEntry>::iterator it =  memberNode->memberList.begin();
         for ( int i=0; i <= getMaxPeers(); i++) {
-           MemberListEntry* nle = new MemberListEntry(-1,-1);
+           MemberListEntry* nle = new MemberListEntry(-1,-1,0,0);
            memberNode->memberList.insert(it+i,*nle);
         } 
 }
