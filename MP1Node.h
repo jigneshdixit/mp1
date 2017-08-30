@@ -18,6 +18,7 @@
 /**
  * Macros
  */
+#define GOSSIP_FANOUT 2
 #define TREMOVE 20
 #define TFAIL 5
 
@@ -76,7 +77,7 @@ public:
 	void nodeLoopOps();
 	int isNullAddress(Address *addr);
 	Address getJoinAddress();
-	Address getAddressFromId(int id);
+	Address getAddressFromId(int id,short port);
 	void initMemberListTable(Member *memberNode);
 	void printAddress(Address *addr);
 	int sendMsg(Address *from, Address *to, MsgTypes msgType, int size, MemberListEntry **data);
