@@ -58,6 +58,7 @@ private:
 	Log *log;
 	Params *par;
 	Member *memberNode;
+        bool *membersState; // Array of members : true = added in Membership List 
 	char NULLADDR[6];
 
 public:
