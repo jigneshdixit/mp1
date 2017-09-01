@@ -110,7 +110,7 @@ int MP1Node::initThisNode(Address *joinaddr) {
         initMemberListTable(memberNode);
 
         membersState = (bool*)malloc((par->MAX_NNB +1)* sizeof(bool));
-        membersState,0,((par->MAX_NNB+1) * sizeof(bool));
+        memset(membersState,0,(par->MAX_NNB+1) * sizeof(bool));
 
     return 0;
 }
